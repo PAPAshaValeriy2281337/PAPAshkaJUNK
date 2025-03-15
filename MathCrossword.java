@@ -7,42 +7,37 @@ public class MathCrossword {
     public static void main(String[] args) {
         int N = 5; // Количество строк
         int M = 5; // Количество колонок
-        char[][] crossword = new char[N][M];
+        String[][] crossword = new String[N][M];
+        initializeCrossword(crossword, N, M);
         generateCrossword(crossword, N, M);
         printCrossword(crossword, N, M);
     }
 
-    private static void generateCrossword(char[][] crossword, int N, int M) {
+    private static void initializeCrossword(String[][] crossword, int N, int M) {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
-                if (crossword[i][j] == '\0') {
-                    if (random.nextBoolean() && j + 4 < M) {
-                        generateHorizontalExpression(crossword, i, j, M);
-                    } else if (i + 4 < N) {
-                        generateVerticalExpression(crossword, i, j, N);
-                    }
-                }
+                crossword[i][j] = " ";
             }
         }
     }
 
-    private static void generateHorizontalExpression(char[][] crossword, int row, int col, int M) {
-        int num1 = random.nextInt(10);
-        int num2 = random.nextInt(10);
-        char operation = OPERATIONS[random.nextInt(OPERATIONS.length)];
-
-        if (operation == '/' && num2 == 0) {
-            num2 = 1; // Избегаем деления на ноль
+    private static void generateCrossword(String[][] crossword, int N, int M) {
+        // Генерация горизонтальных выражений
+        for (int i = 0; i < N; i += 2) {
+            for (int j = 0; j < M - 4; j += 2) {
+                generateHorizontalExpression(crossword, i, j);
+            }
         }
 
-        crossword[row][col] = (char) ('0' + num1);
-        crossword[row][col + 1] = operation;
-        crossword[row][col + 2] = (char) ('0' + num2);
-        crossword[row][col + 3] = '=';
-        crossword[row][col + 4] = (char) ('0' + calculate(num1, num2, operation));
+        // Генерация вертикальных выражений с использованием чисел из горизонтальных выражений
+        for (int j = 0; j < M; j += 2) {
+            for (int i = 0; i < N - 4; i += 2) {
+                generateVerticalExpression(crossword, i, j);
+            }
+        }
     }
 
-    private static void generateVerticalExpression(char[][] crossword, int row, int col, int N) {
+    private static void generateHorizontalExpression(String[][] crossword, int row, int col) {
         int num1 = random.nextInt(10);
         int num2 = random.nextInt(10);
         char operation = OPERATIONS[random.nextInt(OPERATIONS.length)];
@@ -51,11 +46,44 @@ public class MathCrossword {
             num2 = 1; // Избегаем деления на ноль
         }
 
-        crossword[row][col] = (char) ('0' + num1);
-        crossword[row + 1][col] = operation;
-        crossword[row + 2][col] = (char) ('0' + num2);
-        crossword[row + 3][col] = '=';
-        crossword[row + 4][col] = (char) ('0' + calculate(num1, num2, operation));
+        crossword[row][col] = String.valueOf(num1);
+        crossword[row][col + 1] = String.valueOf(operation);
+        crossword[row][col + 2] = String.valueOf(num2);
+        crossword[row][col + 3] = "=";
+        crossword[row][col + 4] = String.valueOf(calculate(num1, num2, operation));
+    }
+
+    private static void generateVerticalExpression(String[][] crossword, int row, int col) {
+        // Используем число из горизонтального выражения для пересечения
+        if (!crossword[row][col].equals(" ")) {
+            int num1 = Integer.parseInt(crossword[row][col]);
+            int num2 = random.nextInt(10);
+            char operation = OPERATIONS[random.nextInt(OPERATIONS.length)];
+
+            if (operation == '/' && num2 == 0) {
+                num2 = 1; // Избегаем деления на ноль
+            }
+
+            crossword[row + 1][col] = String.valueOf(operation);
+            crossword[row + 2][col] = String.valueOf(num2);
+            crossword[row + 3][col] = "=";
+            crossword[row + 4][col] = String.valueOf(calculate(num1, num2, operation));
+        } else {
+            // Если нет пересечения, генерируем новое вертикальное выражение
+            int num1 = random.nextInt(10);
+            int num2 = random.nextInt(10);
+            char operation = OPERATIONS[random.nextInt(OPERATIONS.length)];
+
+            if (operation == '/' && num2 == 0) {
+                num2 = 1; // Избегаем деления на ноль
+            }
+
+            crossword[row][col] = String.valueOf(num1);
+            crossword[row + 1][col] = String.valueOf(operation);
+            crossword[row + 2][col] = String.valueOf(num2);
+            crossword[row + 3][col] = "=";
+            crossword[row + 4][col] = String.valueOf(calculate(num1, num2, operation));
+        }
     }
 
     private static int calculate(int num1, int num2, char operation) {
@@ -68,7 +96,7 @@ public class MathCrossword {
         }
     }
 
-    private static void printCrossword(char[][] crossword, int N, int M) {
+    private static void printCrossword(String[][] crossword, int N, int M) {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
                 System.out.print(crossword[i][j] + " ");
